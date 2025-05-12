@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Private 2-Player Card Game: V6</title>
+  <title>Private Card Game:</title>
   <style>
     body { font-family: sans-serif; text-align: center; }
     .card { font-size: 2em; margin: 10px; padding: 10px; border: 1px solid #444; display: inline-block; }
@@ -10,7 +10,7 @@
   </style>
 </head>
 <body>
-  <h1>Private Card Game: V6</h1>
+  <h1>Private Card Game: codio</h1>
   <p>Are you Player A or Player B?</p>
   <button onclick="setPlayer('A')">I'm Player A</button>
   <button onclick="setPlayer('B')">I'm Player B</button>
@@ -23,11 +23,11 @@
     <div id="status"></div>
   </div>
 
-  <!-- Load Firebase *first*, no defer -->
+  <!-- ✅ THIS is the correct browser bundle -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase.js"></script>
 
-  <!-- Then load your own game logic -->
   <script>
+    // ✅ Replace with YOUR config
     const firebaseConfig = {
       apiKey: "AIzaSyBnS7hK92P99S2g5o8levmYM5EmJdBtjGc",
       authDomain: "cardgame-5cb5a.firebaseapp.com",
@@ -35,49 +35,52 @@
       projectId: "cardgame-5cb5a",
       storageBucket: "cardgame-5cb5a.firebasestorage.app",
       messagingSenderId: "573645164082",
-      appId: "1:573645164082:web:67caf344ce4498929af62b",
-      measurementId: "G-BK0RPRSG4D"
+      appId: "1:573645164082:web:67caf344ce4498929af62b"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // ✅ Wait until Firebase is fully defined
+    if (typeof firebase !== 'undefined') {
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
 
-    // Firebase test
-    db.ref("test_connection").set("Connected from GitHub Pages")
-      .then(() => console.log("✅ Firebase is working!"))
-      .catch((err) => console.error("❌ Firebase error:", err));
+      db.ref("test_connection").set("hello from live site")
+        .then(() => console.log("✅ Firebase is working"))
+        .catch((err) => console.error("❌ Firebase error:", err));
 
-    const roomRef = db.ref("rooms/only-for-us");
-    let player = null;
+      const roomRef = db.ref("rooms/only-for-us");
+      let player = null;
 
-    function setPlayer(p) {
-      player = p;
-      document.getElementById("playerLabel").textContent = p;
-      document.getElementById("game").style.display = "block";
-      listenForOpponent();
+      function setPlayer(p) {
+        player = p;
+        document.getElementById("playerLabel").textContent = p;
+        document.getElementById("game").style.display = "block";
+        listenForOpponent();
+      }
+
+      function playCard() {
+        const card = Math.floor(Math.random() * 10) + 1;
+        roomRef.child("cards/player" + player).set(card);
+        document.getElementById("yourCard").textContent = card;
+        document.getElementById("status").textContent = "Waiting for opponent...";
+      }
+
+      function listenForOpponent() {
+        const opponent = player === "A" ? "B" : "A";
+        roomRef.child("cards/player" + opponent).on("value", snapshot => {
+          const card = snapshot.val();
+          if (card !== null) {
+            document.getElementById("status").textContent = `Opponent played: ${card}`;
+          }
+        });
+      }
+
+      // ✅ Expose to global scope for buttons
+      window.setPlayer = setPlayer;
+      window.playCard = playCard;
+
+    } else {
+      console.error("❌ firebase.js failed to load. Check script src or internet.");
     }
-
-    function playCard() {
-      const card = Math.floor(Math.random() * 10) + 1;
-      roomRef.child("cards/player" + player).set(card);
-      document.getElementById("yourCard").textContent = card;
-      document.getElementById("status").textContent = "Waiting for opponent...";
-    }
-
-    function listenForOpponent() {
-      const opponent = player === "A" ? "B" : "A";
-      roomRef.child("cards/player" + opponent).on("value", snapshot => {
-        const card = snapshot.val();
-        if (card !== null) {
-          document.getElementById("status").textContent =
-            `Opponent played: ${card}`;
-        }
-      });
-    }
-
-    // Expose functions to the browser
-    window.setPlayer = setPlayer;
-    window.playCard = playCard;
   </script>
 </body>
 </html>
