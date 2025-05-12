@@ -2,9 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Private 2-Player Card Game: V3</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"></script>
+  <title>Private 2-Player Card Game: V6</title>
   <style>
     body { font-family: sans-serif; text-align: center; }
     .card { font-size: 2em; margin: 10px; padding: 10px; border: 1px solid #444; display: inline-block; }
@@ -12,7 +10,7 @@
   </style>
 </head>
 <body>
-  <h1>Private Card Game: V3</h1>
+  <h1>Private Card Game: V6</h1>
   <p>Are you Player A or Player B?</p>
   <button onclick="setPlayer('A')">I'm Player A</button>
   <button onclick="setPlayer('B')">I'm Player B</button>
@@ -25,8 +23,11 @@
     <div id="status"></div>
   </div>
 
+  <!-- Load Firebase *first*, no defer -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase.js"></script>
+
+  <!-- Then load your own game logic -->
   <script>
-    // Paste your Firebase config here
     const firebaseConfig = {
       apiKey: "AIzaSyBnS7hK92P99S2g5o8levmYM5EmJdBtjGc",
       authDomain: "cardgame-5cb5a.firebaseapp.com",
@@ -34,13 +35,19 @@
       projectId: "cardgame-5cb5a",
       storageBucket: "cardgame-5cb5a.firebasestorage.app",
       messagingSenderId: "573645164082",
-      appId: "1:573645164082:web:67caf344ce44989
+      appId: "1:573645164082:web:67caf344ce4498929af62b",
+      measurementId: "G-BK0RPRSG4D"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const roomRef = db.ref("rooms/only-for-us");
 
+    // Firebase test
+    db.ref("test_connection").set("Connected from GitHub Pages")
+      .then(() => console.log("✅ Firebase is working!"))
+      .catch((err) => console.error("❌ Firebase error:", err));
+
+    const roomRef = db.ref("rooms/only-for-us");
     let player = null;
 
     function setPlayer(p) {
@@ -67,6 +74,10 @@
         }
       });
     }
+
+    // Expose functions to the browser
+    window.setPlayer = setPlayer;
+    window.playCard = playCard;
   </script>
 </body>
 </html>
