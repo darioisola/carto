@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Private 2-Player Card Game</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; }
+    .card { font-size: 2em; margin: 10px; padding: 10px; border: 1px solid #444; display: inline-block; }
+    #status { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Private Card Game</h1>
+  <p>Are you Player A or Player B?</p>
+  <button onclick="setPlayer('A')">I'm Player A</button>
+  <button onclick="setPlayer('B')">I'm Player B</button>
+
+  <div id="game" style="display:none;">
+    <h2>You are Player <span id="playerLabel"></span></h2>
+    <div id="yourCard" class="card">?</div>
+    <br>
+    <button onclick="playCard()">Play Random Card</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // Paste your Firebase config here
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_DOMAIN",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const roomRef = db.ref("rooms/only-for-us");
+
+    let player = null;
+
+    function setPlayer(p) {
+      player = p;
+      document.getElementById("playerLabel").textContent = p;
+      document.getElementById("game").style.display = "block";
+      listenForOpponent();
+    }
+
+    function playCard() {
+      const card = Math.floor(Math.random() * 10) + 1;
+      roomRef.child("cards/player" + player).set(card);
+      document.getElementById("yourCard").textContent = card;
+      document.getElementById("status").textContent = "Waiting for opponent...";
+    }
+
+    function listenForOpponent() {
+      const opponent = player === "A" ? "B" : "A";
+      roomRef.child("cards/player" + opponent).on("value", snapshot => {
+        const card = snapshot.val();
+        if (card !== null) {
+          document.getElementById("status").textContent =
+            `Opponent played: ${card}`;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
